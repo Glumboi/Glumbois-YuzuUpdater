@@ -1,0 +1,193 @@
+﻿<ui:UiPage
+    x:Class="YuzuUpdater.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:VM="clr-namespace:YuzuUpdater.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:YuzuUpdater.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="MainPage"
+    d:DataContext="{d:DesignInstance {x:Type VM:MainPageViewModel},
+                                     IsDesignTimeCreatable=True}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Background="#333"
+    mc:Ignorable="d">
+    <ui:UiPage.Resources>
+        <Storyboard x:Key="FadeOut">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="progressBar" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="0" />
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="FadeIn">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="progressBar" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame KeyTime="00:00:00" Value="0" />
+                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="1" />
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+    </ui:UiPage.Resources>
+
+    <Grid Grid.Row="1">
+        <Grid Grid.Row="0">
+            <StackPanel>
+                <TextBlock
+                    Padding="4"
+                    FontSize="17"
+                    FontWeight="Bold"
+                    Text="Version" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.11*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            Margin="0,0,2,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            DisplayMemberPath="Name"
+                            ItemsSource="{Binding Path=YuzuVersions}"
+                            SelectedIndex="{Binding Path=SelectedVersion}" />
+                        <ui:TextBox
+                            Grid.Column="1"
+                            Margin="2,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            PlaceholderText="Yuzu Path"
+                            Text="{Binding Path=YuzuPath, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                </Grid>
+                
+                <Grid Margin="0 6 0 0">
+                        
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:Button
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding Path=BrowseFolderCommand}"
+                            Icon="Folder28" />
+
+                        <ui:Button Grid.Column="1"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding InstallCommand}"
+                            Content="Download"
+                            Icon="ArrowDownload24" />
+
+                        <ui:Button Grid.Column="2"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding CheckForUpdatesCommand}"
+                            Content="Check for Updates"
+                            Icon="ArrowCircleUp24" />
+
+                        <ui:Button Grid.Column="3"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding Path=LaunchYuzuCommand}"
+                            Content="Launch"
+                            Icon="ArrowEnter20" />
+                        
+                        <ui:Button Grid.Column="4"
+                            Margin="4,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding Path=ReloadReleasesCommand}"
+                            Content="Reload Releases"
+                            Icon="ArrowSyncCircle24" />
+                    </Grid>
+                
+                <WrapPanel Margin="0 6 0 0 ">
+                    <CheckBox
+                        Margin="0,0,10,0"
+                        Content="Launch after Update"
+                        IsChecked="{Binding Path=LaunchAfterUpdate}" />
+                    <CheckBox
+                        Margin="0,0,10,0"
+                        Content="Admin Mode"
+                        IsChecked="{Binding Path=AdminMode}" />
+                    <CheckBox
+                        Margin="0,0,10,0"
+                        Content="Auto-Close"
+                        IsChecked="{Binding Path=AutoClose}" />
+                </WrapPanel>
+                <WrapPanel>
+                    <StackPanel>
+                        <TextBlock
+                            Grid.Column="1"
+                            Padding="4"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            FontWeight="Bold"
+                            Text="Releases shown in DropDown"
+                            TextWrapping="Wrap" />
+                        <ui:NumberBox
+                            DecimalPlaces="0"
+                            Icon="Check24"
+                            Max="30"
+                            Min="1"
+                            Step="1"
+                            Value="{Binding Path=ShownReleasesCount, Mode=TwoWay}" />
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+            <Grid VerticalAlignment="Bottom">
+                <ProgressBar
+                    x:Name="progressBar"
+                    Height="20"
+                    IsVisibleChanged="ProgressBar_OnIsVisibleChanged"
+                    RenderTransformOrigin="0.5,0.5"
+                    ValueChanged="ProgressBar_OnValueChanged"
+                    Visibility="{Binding Path=ProgressBarVisibility}"
+                    Value="{Binding Path=Progress}">
+                    <ProgressBar.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                            <SkewTransform />
+                            <RotateTransform />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </ProgressBar.RenderTransform>
+                    <ProgressBar.Foreground>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0.0" Color="Wheat" />
+                            <GradientStop Offset="0.25" Color="Pink" />
+                            <GradientStop Offset="0.75" Color="DeepPink" />
+                            <GradientStop Offset="1.0" Color="Silver" />
+                        </LinearGradientBrush>
+                    </ProgressBar.Foreground>
+                </ProgressBar>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="{Binding Path=ProgressText}"
+                    Visibility="{Binding Path=ProgressBarVisibility}">
+                    <TextBlock.Effect>
+                        <DropShadowEffect RenderingBias="Performance" ShadowDepth="2" />
+                    </TextBlock.Effect>
+                </TextBlock>
+            </Grid>
+            <ui:Snackbar
+                x:Name="Snackbar"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom"
+                Timeout="5000" />
+        </Grid>
+    </Grid>
+</ui:UiPage>
