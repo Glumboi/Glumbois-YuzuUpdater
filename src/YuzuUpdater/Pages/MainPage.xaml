@@ -187,7 +187,8 @@
                 x:Name="Snackbar"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
-                Timeout="5000" />
+                Timeout="5000" 
+                FontWeight="Bold"/>
         </Grid>
     </Grid>
 </ui:UiPage>

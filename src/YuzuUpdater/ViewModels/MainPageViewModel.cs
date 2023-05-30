@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Wpf.Ui.Common;
 using Wpf.Ui.Controls;
@@ -174,13 +175,16 @@ internal class MainPageViewModel : ViewModelBase
 
     private void CreateInstallCommand()
     {
-        InstallCommand = new RelayCommand(Install, () =>
+        InstallCommand = new RelayCommand(() =>
+        {
+            Install();
+        }, () =>
         {
             return YuzuVersions.Count > 0 && Directory.Exists(YuzuPath);
         });
     }
 
-    public void Install()
+    public void Install(bool useLatest = false)
     {
         if (!Directory.Exists(YuzuPath) || string.IsNullOrWhiteSpace(YuzuPath))
         {
@@ -188,12 +192,24 @@ internal class MainPageViewModel : ViewModelBase
             return;
         }
 
-        Networking.DownloadFile(YuzuVersions[SelectedVersion].DirectDownloadUrl, System.IO.Path.Combine(YuzuPath, "TempDownload.zip"),
+        YuzuVersion downloadVersion = useLatest ? YuzuVersions[0] : YuzuVersions[SelectedVersion];
+        
+        Networking.DownloadFile(downloadVersion.DirectDownloadUrl, System.IO.Path.Combine(YuzuPath, "TempDownload.zip"),
             GetType().GetProperty(nameof(ProgressText)),
             GetType().GetProperty(nameof(Progress)),
             GetType().GetProperty(nameof(ProgressBarVisibility)),
             this,
             _settings);
+
+        Task.Run(() =>
+        {
+            while (Networking._downloading)
+            {
+                continue;
+            }
+
+            ShowNotification($"Info\nInstalled Yuzu {downloadVersion.Name} with Success!", SymbolRegular.Checkmark24);
+        });
     }
 
     public ICommand ReloadReleasesCommand
@@ -295,7 +311,7 @@ internal class MainPageViewModel : ViewModelBase
 
             if (dialogResult == MessageBoxResult.Yes)
             {
-                Install();
+                Install(true);
             }
 
             return;
@@ -323,10 +339,13 @@ internal class MainPageViewModel : ViewModelBase
 
     public void ShowNotification(string text, SymbolRegular symbol = SymbolRegular.Info24)
     {
-        NotificationBar.Icon = symbol;
-        NotificationBar.Content = text;
+        NotificationBar.Dispatcher.Invoke(new Action(() =>
+        {
+            NotificationBar.Icon = symbol;
+            NotificationBar.Content = text;
 
-        NotificationBar.Show();
+            NotificationBar.Show();
+        }));
     }
 
     public MainPageViewModel(Snackbar notificationBar)

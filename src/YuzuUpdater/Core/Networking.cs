@@ -18,9 +18,9 @@ namespace YuzuUpdater.Core;
 
 public class Networking
 {
+    public static bool _downloading = false;
     private static Window _window;
     private static Stopwatch _stopWatch = new Stopwatch();
-    private static bool _downloading = false;
     private static string _progressBarText;
     private static int _currentProgress;
     private static UpdaterSettings _settings;

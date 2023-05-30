@@ -13,6 +13,9 @@
     <Copyright>Glumboi (c) 2023</Copyright>
     <PackageIcon>icon.png</PackageIcon>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
